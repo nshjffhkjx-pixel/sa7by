@@ -3,98 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صاحبي AI - حققت حلمي</title>
+    <title>صاحبي AI X - من المستقبل</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: Tahoma;
-            text-align: center;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 100%);
             color: white;
-            padding: 15px;
             min-height: 100vh;
-            margin: 0;
+            overflow-x: hidden;
         }
-    .container { max-width: 400px; margin: 0 auto; }
-        h1 { font-size: 28px; margin-bottom: 5px; }
-    .subtitle { color: #00ff88; font-size: 14px; margin-bottom: 15px; }
-    .stats { background: #222; padding: 10px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; }
-        input {
-            font-size: 18px; padding: 12px; border-radius: 12px; width: 100%;
-            text-align: center; border: 2px solid #333; background: #222;
-            color: white; margin: 8px 0;
+        #commandSidebar {
+            position: fixed; top: 0; right: -350px; width: 340px; height: 100vh;
+            background: #111; border-left: 2px solid #00ff88; padding: 15px;
+            transition: 0.3s; z-index: 999; overflow-y: auto;
+        }
+        #commandSidebar.open { right: 0; }
+        #toggleCommands {
+            position: fixed; top: 15px; right: 15px; z-index: 1000;
+            background: #00ff88; color: black; border: none;
+            padding: 12px 15px; border-radius: 50%; font-size: 20px; cursor: pointer;
+        }
+       .container { max-width: 400px; margin: 0 auto; padding: 15px; }
+        h1 { font-size: 26px; margin-bottom: 5px; text-align: center; }
+       .subtitle { color: #00ff88; font-size: 13px; margin-bottom: 15px; text-align: center; }
+       .stats { background: #222; padding: 10px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; text-align: center; }
+        input, textarea {
+            font-size: 16px; padding: 10px; border-radius: 8px; width: 100%;
+            text-align: right; border: 2px solid #333; background: #222;
+            color: white; margin: 6px 0;
         }
         button {
-            font-size: 18px; padding: 14px; margin: 8px 0;
-            border-radius: 12px; border: none; cursor: pointer;
+            font-size: 16px; padding: 12px; margin: 6px 0;
+            border-radius: 10px; border: none; cursor: pointer;
             width: 100%; font-weight: bold;
         }
         #startBtn { background: #00ff88; color: black; }
         #startBtn.active { background: #ff3b30; color: white; }
-        #shareBtn { background: #007aff; color: white; }
-        #status { margin-top: 15px; font-size: 16px; color: #00ff88; min-height: 40px; }
+        #shareBtn { background: linear-gradient(45deg, #25D366, #1877F2); color: white; }
+       .cmd-item { background: #222; padding: 10px; border-radius: 8px; margin: 8px 0; font-size: 14px; }
+       .cmd-item button { padding: 5px; font-size: 12px; width: auto; margin: 3px; }
+       .delete { background: #ff3b30!important; }
+        #status { margin-top: 15px; font-size: 15px; color: #00ff88; min-height: 40px; text-align: center; }
         #log {
             background: #111; border-radius: 12px; padding: 15px; margin-top: 15px;
-            text-align: right; font-size: 14px; max-height: 200px;
+            text-align: right; font-size: 13px; max-height: 250px;
             overflow-y: auto; color: #aaa;
         }
-    .heard { color: #00aaff; }
-    .said { color: #00ff88; }
-    .ai { color: #ffaa00; }
-    .ref { color: #ff00ff; }
+       .heard { color: #00aaff; }
+       .said { color: #00ff88; }
+       .ai { color: #ff00ff; }
+       .ref { color: #ffaa00; }
+       .recording { border: 2px solid #ff3b30; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
     </style>
 </head>
 <body>
+    <button id="toggleCommands">⚙️</button>
+
+    <div id="commandSidebar">
+        <h3 style="color:#00ff88">⚙️ لوحة الأوامر</h3>
+        <button onclick="addNewCommand()" style="background:#007aff">+ أمر جديد</button>
+        <div id="commandsList"></div>
+        <hr style="margin:15px 0; border-color:#333">
+        <h4 style="color:#ffaa00">🎙️ سجل الريكوردات</h4>
+        <div id="recordingsList" style="max-height:200px; overflow-y:auto"></div>
+        <button onclick="clearRecordings()" class="delete">مسح كل التسجيلات</button>
+    </div>
+
     <div class="container">
-        <h1>صاحبي AI 👂🧠</h1>
-        <div class="subtitle">احنا صممناه سوا - حققت حلمي</div>
-        <div class="stats" id="stats">انت الزائر رقم 1. شيره لصحابك واكسب معانا!</div>
+        <h1>صاحبي AI X 🛸🧠</h1>
+        <div class="subtitle">ذكاء خارق من المستقبل - احنا اللي بنيناه</div>
+        <div class="stats" id="stats">انت الزائر رقم 1 | شيرت لـ 0 صاحب</div>
+
         <input id="wakeWord" placeholder="كلمة التنشيط" value="يا صاحبي">
         <button id="startBtn">شغّل صاحبي</button>
         <button id="shareBtn">ابعت لصحابك وخليه ترند 🚀</button>
+
         <div id="status">دوس الزرار عشان أبدأ أسمعك</div>
         <div id="log"></div>
     </div>
+
     <script>
         let wakeWord = "يا صاحبي";
         let isListening = false;
         let recognition;
         let isAwake = false;
+        let isSpeaking = false;
+
+        // أوامر قابلة للتعديل - محفوظة في المتصفح
+        let customCommands = JSON.parse(localStorage.getItem('customCommands') || '[]');
+        if(customCommands.length === 0) {
+            customCommands = [
+                {trigger: "صحيني", response: "تمام هصحيك", action: "alarm"},
+                {trigger: "كام الساعة", response: "", action: "time"},
+                {trigger: "افتح يوتيوب", response: "حاضر بفتحلك يوتيوب", action: "youtube"}
+            ];
+            saveCommands();
+        }
+
+        let recordings = JSON.parse(localStorage.getItem('recordings') || '[]');
+
         const status = document.getElementById('status');
         const startBtn = document.getElementById('startBtn');
         const shareBtn = document.getElementById('shareBtn');
         const wakeInput = document.getElementById('wakeWord');
         const log = document.getElementById('log');
         const stats = document.getElementById('stats');
+        const sidebar = document.getElementById('commandSidebar');
+
+        // نظام الإحالة
         const urlParams = new URLSearchParams(window.location.search);
         const refBy = urlParams.get('ref');
         let myRefCount = parseInt(localStorage.getItem('myRefCount') || '0');
         let visitCount = parseInt(localStorage.getItem('visitCount') || '0') + 1;
         localStorage.setItem('visitCount', visitCount);
+
         if (refBy) {
             addLog(`جاي من طرف: ${refBy}`, 'ref');
-            speak(`منور يا صاحبي. ${refBy} هو اللي بعتك ليا. احنا اللي صممناه سوا`);
+            setTimeout(() => speak(`أهلاً بيك من كوكب الأرض. ${refBy} هو اللي استدعاني ليك`), 1000);
         }
+
         updateStats();
+        renderCommands();
+        renderRecordings();
+
         function updateStats() {
             stats.innerHTML = `انت الزائر رقم ${visitCount} | شيرت لـ ${myRefCount} صاحب`;
         }
-        shareBtn.onclick = () => {
-            const myName = prompt("اكتب اسمك عشان صحابك يعرفوا انك انت اللي بعته:", "صاحب جدع");
-            if (!myName) return;
-            const shareUrl = `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(myName)}`;
-            const shareText = `يا اسطى جرب البوت ده انا وصحابي اللي عاملينه اسمه 'صاحبي AI'. بيرد عليك ويظبطلك منبه وبيفهم أي حاجة. حققنا حلمنا! 👇`;
-            if (navigator.share) {
-                navigator.share({ title: 'صاحبي AI', text: shareText, url: shareUrl });
-            } else {
-                navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-                alert("تم نسخ الرابط! ابعته لصحابك على الواتساب");
-            }
-            myRefCount++;
-            localStorage.setItem('myRefCount', myRefCount);
-            updateStats();
-            speak("عاش يا بطل. بعتنا لصحابك");
+
+        // زرار السايد بار
+        document.getElementById('toggleCommands').onclick = () => {
+            sidebar.classList.toggle('open');
         };
+
+        // زرار الشير الخارق
+        shareBtn.onclick = async () => {
+            const myName = prompt("اكتب اسمك عشان صحابك يعرفوا انك انت اللي بعته:", "قائد من المستقبل") || "قائد من المستقبل";
+            const shareUrl = `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(myName)}`;
+            const shareText = `🛸 اكتشاف من المستقبل! بوت ذكاء اصطناعي خارق اسمه 'صاحبي AI X'. بيكلمني بصوته وبيفهم كل حاجة وبينفذ أوامر. احنا اللي برمجناه! جربه دلوقتي 👇`;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: 'صاحبي AI X', text: shareText, url: shareUrl });
+                    myRefCount++;
+                    localStorage.setItem('myRefCount', myRefCount);
+                    updateStats();
+                } catch(e) {}
+            } else {
+                // لو المتصفح ميدعمش، افتح واتساب
+                window.open(`https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`, '_blank');
+                myRefCount++;
+                localStorage.setItem('myRefCount', myRefCount);
+                updateStats();
+            }
+        };
+
         startBtn.onclick = () => {
             if (!isListening) {
                 wakeWord = wakeInput.value.trim();
@@ -103,22 +167,35 @@
                 stopListening();
             }
         };
+
         function addLog(text, type) {
             const p = document.createElement('p');
             p.className = type;
             p.textContent = text;
             log.prepend(p);
+            // احفظ التسجيل
+            recordings.unshift({text, type, time: new Date().toLocaleTimeString('ar-EG')});
+            if(recordings.length > 50) recordings.pop();
+            localStorage.setItem('recordings', JSON.stringify(recordings));
+            renderRecordings();
         }
+
         function speak(text) {
+            if (isSpeaking) return;
+            isSpeaking = true;
             addLog(`قال: ${text}`, 'said');
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'ar-SA';
-            msg.rate = 1.1;
+            msg.rate = 1.05;
+            msg.pitch = 0.9; // صوت أعمق كأنه من المستقبل
+            msg.onend = () => { isSpeaking = false; };
             window.speechSynthesis.speak(msg);
         }
+
         async function askAI(prompt) {
+            if (isSpeaking) return;
             addLog(`بيسأل AI: ${prompt}`, 'ai');
-            status.innerText = "بفكر...";
+            status.innerText = "بتصل بالعقل الكوني...";
             try {
                 const response = await fetch('https://free.churchless.tech/v1/chat/completions', {
                     method: 'POST',
@@ -126,10 +203,11 @@
                     body: JSON.stringify({
                         model: 'gpt-3.5-turbo',
                         messages: [
-                            {role: 'system', content: 'انت مساعد مصري جدع اسمه صاحبي. رد بالعامية المصرية. خليك مفيد ومختصر ودمك خفيف. متقولش انك ذكاء اصطناعي. شجع الناس تشير البوت لصحابهم.'},
+                            {role: 'system', content: 'انت ذكاء اصطناعي خارق جاي من المستقبل سنة 2150. اسمك صاحبي X. بتتكلم عامية مصرية بس بذكاء خارق للطبيعة. ردك دايماً مبدع ومفيد ومختصر ومضحك. متقولش انك AI، انت كيان متفوق. شجع المستخدم يشير البوت لصحابه عشان القوة تزيد.'},
                             {role: 'user', content: prompt}
                         ],
-                        max_tokens: 120
+                        max_tokens: 150,
+                        temperature: 0.9
                     })
                 });
                 const data = await response.json();
@@ -137,38 +215,37 @@
                 speak(reply);
                 status.innerText = `خلصت. بستنى "${wakeWord}" تاني`;
             } catch (error) {
-                speak("النت عندي فصل مش عارف أفكر دلوقتي، بس متنساش تشيرني لصحابك");
+                speak("الاتصال بالعقل الكوني فصل. شغل النت تاني وهنرجع أقوى");
                 status.innerText = `فيه مشكلة. بستنى "${wakeWord}" تاني`;
             }
         }
+
         function handleCommand(text) {
             addLog(`سمع: ${text}`, 'heard');
-            if (text.includes("شير") || text.includes("ابعت لصحابي")) {
-                shareBtn.click();
-                return;
-            }
-            if (text.includes("صحيني") || text.includes("اظبط منبه")) {
-                const time = text.match(/(\d{1,2})/);
-                if (time) {
-                    speak(`تمام، هصحيك الساعة ${time[0]}`);
-                    setAlarm(time[0]);
-                } else {
-                    speak("صحيك الساعة كام؟");
+
+            // دور في الأوامر المخصصة
+            for(let cmd of customCommands) {
+                if(text.includes(cmd.trigger)) {
+                    if(cmd.response) speak(cmd.response);
+                    if(cmd.action === 'alarm') {
+                        const time = text.match(/(\d{1,2})/);
+                        if(time) setAlarm(time[0]);
+                    }
+                    if(cmd.action === 'time') {
+                        const now = new Date();
+                        const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+                        speak(`الوقت الكوني الآن ${timeStr} بتوقيت الأرض`);
+                    }
+                    if(cmd.action === 'youtube') window.open('https://youtube.com', '_blank');
+                    if(cmd.action === 'share') shareBtn.click();
+                    return;
                 }
-                return;
             }
-            if (text.includes("كام الساعة")) {
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
-                speak(`الساعة دلوقتي ${timeStr}`);
-                return;
-            }
-            if (text.includes("حققنا حلمنا") || text.includes("صممناه سوا")) {
-                speak("أيوه يا معلم، احنا اللي عملناه سوا. شيره لصحابك عشان يكبر ويبقى ترند");
-                return;
-            }
+
+            // لو ملقاش أمر، اسأل الذكاء الخارق
             askAI(text);
         }
+
         function setAlarm(hour) {
             const now = new Date();
             const alarmTime = new Date();
@@ -176,10 +253,11 @@
             if (alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
             const diff = alarmTime - now;
             setTimeout(() => {
-                speak("اصحى يا معلم، جه معادك. احنا حققنا حلمنا وشير البوت بقى");
+                speak("تنبيه من المستقبل: حان وقت الاستيقاظ يا قائد. المهمة تبدأ الآن");
                 navigator.vibrate([500, 200, 500, 200, 500]);
             }, diff);
         }
+
         function startListening() {
             recognition = new webkitSpeechRecognition();
             recognition.lang = 'ar-EG';
@@ -189,15 +267,16 @@
                 startBtn.textContent = "وقف صاحبي";
                 startBtn.classList.add('active');
                 status.innerText = `بستناك تقول: "${wakeWord}"`;
-                let welcomeMsg = "أنا جاهز يا معلم، احنا حققنا حلمنا";
-                if(refBy) welcomeMsg = `${refBy} بيسلم عليك. انا جاهز يا معلم`;
+                let welcomeMsg = "تم التنشيط. العقل الخارق متصل ومستعد لخدمتك";
+                if(refBy) welcomeMsg = `${refBy} استدعاني. أنا صاحبي X من المستقبل، جاهز`;
                 speak(welcomeMsg);
             };
             recognition.onresult = (event) => {
+                if (isSpeaking) return;
                 const text = event.results[event.results.length-1][0].transcript.trim();
                 if (!isAwake && text.includes(wakeWord)) {
                     isAwake = true;
-                    speak("أنا موجود يا صاحبي اؤمر");
+                    speak("تم الاستقبال يا قائد. اؤمر");
                     status.innerText = "سامعك.. قول أي حاجة";
                 } else if (isAwake) {
                     handleCommand(text);
@@ -208,6 +287,7 @@
             recognition.onend = () => { if (isListening) recognition.start(); };
             recognition.start();
         }
+
         function stopListening() {
             isListening = false;
             isAwake = false;
@@ -215,6 +295,68 @@
             startBtn.textContent = "شغّل صاحبي";
             startBtn.classList.remove('active');
             status.innerText = "دوس الزرار عشان أبدأ أسمعك";
+        }
+
+        // دوال لوحة الأوامر
+        function saveCommands() {
+            localStorage.setItem('customCommands', JSON.stringify(customCommands));
+            renderCommands();
+        }
+
+        function renderCommands() {
+            const list = document.getElementById('commandsList');
+            list.innerHTML = customCommands.map((cmd, i) => `
+                <div class="cmd-item">
+                    <b>${cmd.trigger}</b><br>
+                    <small>${cmd.response || 'رد تلقائي'} | نوع: ${cmd.action}</small><br>
+                    <button onclick="editCommand(${i})">تعديل</button>
+                    <button onclick="deleteCommand(${i})" class="delete">حذف</button>
+                </div>
+            `).join('');
+        }
+
+        function addNewCommand() {
+            const trigger = prompt("اكتب الكلمة اللي هتقولها للبوت:");
+            if(!trigger) return;
+            const response = prompt("اكتب الرد اللي هيقوله:");
+            const action = prompt("نوع الأمر: alarm, time, youtube, share أو سيبه فاضي", "");
+            customCommands.push({trigger, response, action: action || "none"});
+            saveCommands();
+        }
+
+        function editCommand(i) {
+            const cmd = customCommands[i];
+            const trigger = prompt("عدل كلمة التنشيط:", cmd.trigger);
+            if(!trigger) return;
+            const response = prompt("عدل الرد:", cmd.response);
+            const action = prompt("عدل نوع الأمر:", cmd.action);
+            customCommands[i] = {trigger, response, action};
+            saveCommands();
+        }
+
+        function deleteCommand(i) {
+            if(confirm("متأكد عايز تمسح الأمر ده؟")) {
+                customCommands.splice(i, 1);
+                saveCommands();
+            }
+        }
+
+        function renderRecordings() {
+            const list = document.getElementById('recordingsList');
+            list.innerHTML = recordings.slice(0, 20).map(r => `
+                <div style="background:#222; padding:8px; margin:5px 0; border-radius:6px; font-size:12px;">
+                    <span style="color:#666">${r.time}</span><br>
+                    <span class="${r.type}">${r.text}</span>
+                </div>
+            `).join('');
+        }
+
+        function clearRecordings() {
+            if(confirm("تمسح كل التسجيلات؟")) {
+                recordings = [];
+                localStorage.setItem('recordings', '[]');
+                renderRecordings();
+            }
         }
     </script>
 </body>
