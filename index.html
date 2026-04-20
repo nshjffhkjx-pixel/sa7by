@@ -1,40 +1,249 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صاحبي - مساعدك الشخصي</title>
+    <title>صاحبي AI - حققت حلمي</title>
     <style>
-        body { font-family: Tahoma; text-align: center; background: #1a1a1a; color: white; padding-top: 50px; }
-        button { font-size: 20px; padding: 15px 30px; margin: 10px; border-radius: 12px; border: none; cursor: pointer; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: Tahoma;
+            text-align: center;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: white;
+            padding: 15px;
+            min-height: 100vh;
+            margin: 0;
+        }
+     .container { max-width: 400px; margin: 0 auto; }
+        h1 { font-size: 28px; margin-bottom: 5px; }
+     .subtitle { color: #00ff88; font-size: 14px; margin-bottom: 15px; }
+     .stats { background: #222; padding: 10px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; }
+        input {
+            font-size: 18px; padding: 12px; border-radius: 12px; width: 100%;
+            text-align: center; border: 2px solid #333; background: #222;
+            color: white; margin: 8px 0;
+        }
+        button {
+            font-size: 18px; padding: 14px; margin: 8px 0;
+            border-radius: 12px; border: none; cursor: pointer;
+            width: 100%; font-weight: bold;
+        }
         #startBtn { background: #00ff88; color: black; }
-        #status { margin-top: 30px; font-size: 24px; color: #00ff88; }
-        input { font-size: 18px; padding: 10px; border-radius: 8px; width: 200px; text-align: center; }
+        #startBtn.active { background: #ff3b30; color: white; }
+        #shareBtn { background: #007aff; color: white; }
+        #status { margin-top: 15px; font-size: 16px; color: #00ff88; min-height: 40px; }
+        #log {
+            background: #111; border-radius: 12px; padding: 15px; margin-top: 15px;
+            text-align: right; font-size: 14px; max-height: 200px;
+            overflow-y: auto; color: #aaa;
+        }
+     .heard { color: #00aaff; }
+     .said { color: #00ff88; }
+     .ai { color: #ffaa00; }
+     .ref { color: #ff00ff; }
     </style>
 </head>
 <body>
-    <h1>صاحبي 👂</h1>
-    <p>اختار كلمة التنشيط بتاعتك:</p>
-    <input id="wakeWord" placeholder="مثال: يا صاحبي" value="يا صاحبي">
-    <br><br>
-    <button id="startBtn">شغّل صاحبي</button>
-    <div id="status">دوس الزرار عشان أبدأ أسمعك</div>
+    <div class="container">
+        <h1>صاحبي AI 👂🧠</h1>
+        <div class="subtitle">احنا صممناه سوا - حققت حلمي</div>
+        <div class="stats" id="stats">انت الزائر رقم 1. شيره لصحابك واكسب معانا!</div>
+
+        <input id="wakeWord" placeholder="كلمة التنشيط" value="يا صاحبي">
+        <button id="startBtn">شغّل صاحبي</button>
+        <button id="shareBtn">ابعت لصحابك وخليه ترند 🚀</button>
+
+        <div id="status">دوس الزرار عشان أبدأ أسمعك</div>
+        <div id="log"></div>
+    </div>
 
     <script>
         let wakeWord = "يا صاحبي";
+        let isListening = false;
+        let recognition;
+        let isAwake = false;
+
         const status = document.getElementById('status');
         const startBtn = document.getElementById('startBtn');
+        const shareBtn = document.getElementById('shareBtn');
         const wakeInput = document.getElementById('wakeWord');
+        const log = document.getElementById('log');
+        const stats = document.getElementById('stats');
 
-        startBtn.onclick = () => {
-            wakeWord = wakeInput.value.trim();
-            startListening();
+        // نظام الإحالة
+        const urlParams = new URLSearchParams(window.location.search);
+        const refBy = urlParams.get('ref');
+        let myRefCount = parseInt(localStorage.getItem('myRefCount') || '0');
+        let visitCount = parseInt(localStorage.getItem('visitCount') || '0') + 1;
+        localStorage.setItem('visitCount', visitCount);
+
+        if (refBy) {
+            addLog(`جاي من طرف: ${refBy}`, 'ref');
+            speak(`منور يا صاحبي. ${refBy} هو اللي بعتك ليا. احنا اللي صممناه سوا`);
+        }
+
+        updateStats();
+
+        function updateStats() {
+            stats.innerHTML = `انت الزائر رقم ${visitCount} | شيرت لـ ${myRefCount} صاحب`;
+        }
+
+        shareBtn.onclick = () => {
+            const myName = prompt("اكتب اسمك عشان صحابك يعرفوا انك انت اللي بعته:", "صاحب جدع");
+            if (!myName) return;
+
+            const shareUrl = `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(myName)}`;
+            const shareText = `يا اسطى جرب البوت ده انا وصحابي اللي عاملينه اسمه 'صاحبي AI'. بيرد عليك ويظبطلك منبه وبيفهم أي حاجة. حققنا حلمنا! 👇`;
+
+            if (navigator.share) {
+                navigator.share({ title: 'صاحبي AI', text: shareText, url: shareUrl });
+            } else {
+                navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+                alert("تم نسخ الرابط! ابعته لصحابك على الواتساب");
+            }
+            myRefCount++;
+            localStorage.setItem('myRefCount', myRefCount);
+            updateStats();
+            speak("عاش يا بطل. بعتنا لصحابك");
         };
 
+        startBtn.onclick = () => {
+            if (!isListening) {
+                wakeWord = wakeInput.value.trim();
+                startListening();
+            } else {
+                stopListening();
+            }
+        };
+
+        function addLog(text, type) {
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = text;
+            log.prepend(p);
+        }
+
         function speak(text) {
+            addLog(`قال: ${text}`, 'said');
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'ar-SA';
+            msg.rate = 1.1;
             window.speechSynthesis.speak(msg);
+        }
+
+        async function askAI(prompt) {
+            addLog(`بيسأل AI: ${prompt}`, 'ai');
+            status.innerText = "بفكر...";
+            try {
+                const response = await fetch('https://free.churchless.tech/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            {role: 'system', content: 'انت مساعد مصري جدع اسمه صاحبي. رد بالعامية المصرية. خليك مفيد ومختصر ودمك خفيف. متقولش انك ذكاء اصطناعي. شجع الناس تشير البوت لصحابهم.'},
+                            {role: 'user', content: prompt}
+                        ],
+                        max_tokens: 120
+                    })
+                });
+                const data = await response.json();
+                const reply = data.choices[0].message.content.trim();
+                speak(reply);
+                status.innerText = `خلصت. بستنى "${wakeWord}" تاني`;
+            } catch (error) {
+                speak("النت عندي فصل مش عارف أفكر دلوقتي، بس متنساش تشيرني لصحابك");
+                status.innerText = `فيه مشكلة. بستنى "${wakeWord}" تاني`;
+            }
+        }
+
+        function handleCommand(text) {
+            addLog(`سمع: ${text}`, 'heard');
+
+            if (text.includes("شير") || text.includes("ابعت لصحابي")) {
+                shareBtn.click();
+                return;
+            }
+
+            if (text.includes("صحيني") || text.includes("اظبط منبه")) {
+                const time = text.match(/(\d{1,2})/);
+                if (time) {
+                    speak(`تمام، هصحيك الساعة ${time[0]}`);
+                    setAlarm(time[0]);
+                } else {
+                    speak("صحيك الساعة كام؟");
+                }
+                return;
+            }
+
+            if (text.includes("كام الساعة")) {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+                speak(`الساعة دلوقتي ${timeStr}`);
+                return;
+            }
+
+            if (text.includes("حققنا حلمنا") || text.includes("صممناه سوا")) {
+                speak("أيوه يا معلم، احنا اللي عملناه سوا. شيره لصحابك عشان يكبر ويبقى ترند");
+                return;
+            }
+
+            askAI(text);
+        }
+
+        function setAlarm(hour) {
+            const now = new Date();
+            const alarmTime = new Date();
+            alarmTime.setHours(parseInt(hour), 0, 0, 0);
+            if (alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
+            const diff = alarmTime - now;
+            setTimeout(() => {
+                speak("اصحى يا معلم، جه معادك. احنا حققنا حلمنا وشير البوت بقى");
+                navigator.vibrate([500, 200, 500, 200, 500]);
+            }, diff);
+        }
+
+        function startListening() {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'ar-EG';
+            recognition.continuous = true;
+            recognition.onstart = () => {
+                isListening = true;
+                startBtn.textContent = "وقف صاحبي";
+                startBtn.classList.add('active');
+                status.innerText = `بستناك تقول: "${wakeWord}"`;
+                let welcomeMsg = "أنا جاهز يا معلم، احنا حققنا حلمنا";
+                if(refBy) welcomeMsg = `${refBy} بيسلم عليك. انا جاهز يا معلم`;
+                speak(welcomeMsg);
+            };
+            recognition.onresult = (event) => {
+                const text = event.results[event.results.length-1][0].transcript.trim();
+                if (!isAwake && text.includes(wakeWord)) {
+                    isAwake = true;
+                    speak("أنا موجود يا صاحبي اؤمر");
+                    status.innerText = "سامعك.. قول أي حاجة";
+                } else if (isAwake) {
+                    handleCommand(text);
+                    isAwake = false;
+                }
+            };
+            recognition.onerror = () => stopListening();
+            recognition.onend = () => { if (isListening) recognition.start(); };
+            recognition.start();
+        }
+
+        function stopListening() {
+            isListening = false;
+            isAwake = false;
+            if (recognition) recognition.stop();
+            startBtn.textContent = "شغّل صاحبي";
+            startBtn.classList.remove('active');
+            status.innerText = "دوس الزرار عشان أبدأ أسمعك";
+        }
+    </script>
+</body>
+</html>         window.speechSynthesis.speak(msg);
         }
 
         function startListening() {
