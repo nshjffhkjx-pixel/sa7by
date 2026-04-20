@@ -12,187 +12,118 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #121212;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            color: white;
         }
-     .container {
-            background: white;
+    .container {
+            background: #1e1e1e;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 500px;
+            max-width: 400px;
             width: 100%;
             padding: 30px;
-            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
         h1 {
             text-align: center;
-            color: #667eea;
+            color: white;
             margin-bottom: 10px;
             font-size: 28px;
         }
-     .subtitle {
+    .subtitle {
             text-align: center;
-            color: #666;
-            margin-bottom: 20px;
+            color: #00ff88;
+            margin-bottom: 30px;
             font-size: 14px;
         }
         #status {
             text-align: center;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #666;
-            min-height: 20px;
-        }
-     .btn {
-            width: 100%;
             padding: 15px;
-            border: none;
-            border-radius: 10px;
+            margin-bottom: 20px;
             font-size: 16px;
+            color: #aaa;
+            background: #2a2a2a;
+            border-radius: 10px;
+            min-height: 50px;
+        }
+    .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             transition: all 0.3s;
         }
-     .btn:active {
-            transform: scale(0.98);
+    .btn:active {
+            transform: scale(0.97);
         }
-     .btn-start {
-            background: #4caf50;
+    .btn-ai {
+            background: #00d66f;
+            color: #121212;
+        }
+    .btn-stop {
+            background: #ff3b30;
             color: white;
         }
-     .btn-stop {
-            background: #f44336;
+    .btn-alarm {
+            background: #007aff;
             color: white;
         }
-     .btn-share {
-            background: #2196F3;
-            color: white;
-        }
-     .btn-test {
-            background: #ff9800;
-            color: white;
-        }
-        #log {
-            background: #f5f5f5;
+        #alarmList {
+            background: #2a2a2a;
             border-radius: 10px;
             padding: 15px;
-            height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
+            margin-top: 20px;
             font-size: 14px;
+            max-height: 150px;
+            overflow-y: auto;
         }
-     .log-entry {
-            margin-bottom: 8px;
+       .alarm-item {
             padding: 8px;
-            border-radius: 5px;
-            background: white;
-        }
-     .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #eee;
-            font-size: 13px;
-            color: #666;
-        }
-        #commands {
-            background: #fff9c4;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            font-size: 13px;
-        }
-        #commands h3 {
-            margin-bottom: 10px;
-            color: #f57c00;
-        }
-        #commands ul {
-            list-style: none;
-            padding-right: 15px;
-        }
-        #commands li {
             margin-bottom: 5px;
+            background: #333;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
         }
-        #toggleCommands {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #667eea;
-            color: white;
+       .delete-alarm {
+            background: #ff3b30;
             border: none;
-            font-size: 24px;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 5px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 1000;
-        }
-     .hidden {
-            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎤 صاحبي AI</h1>
-        <div class="subtitle">الإصدار اللي مبيخرسش</div>
+        <h1>🧠 👂 AI صاحبي</h1>
+        <div class="subtitle">احنا صممناه سوا - حققت حلمي</div>
 
-        <div id="status"></div>
+        <div id="status">دوس الزرار عشان أبدأ أسمعك</div>
 
-        <div id="commands" class="hidden">
-            <h3>الأوامر المتاحة:</h3>
-            <ul>
-                <li>• "يا صاحبي" - عشان يصحى ويرد عليك</li>
-                <li>• "عامل ايه" - هيقولك اخباره</li>
-                <li>• "قولي نكتة" - نكتة سريعة</li>
-                <li>• "كام الساعة" - الوقت دلوقتي</li>
-                <li>• "شغل اغاني" - هيفتح يوتيوب</li>
-                <li>• "ابعت لصحابك" - يشارك الموقع</li>
-            </ul>
-        </div>
+        <button class="btn btn-ai" id="micBtn" onclick="toggleAI()">شغّل صاحبي</button>
+        <button class="btn btn-alarm" onclick="setAlarmVoice()">اظبط منبه بالصوت</button>
 
-        <button class="btn btn-test" onclick="testVoice()">🔊 دوس هنا الأول عشان الصوت يشتغل</button>
-        <button class="btn btn-start" id="micBtn" onclick="toggleMic()">شغّل صاحبي</button>
-        <button class="btn btn-share" onclick="shareApp()">ابعت لصحابك</button>
-
-        <div id="log"></div>
-
-        <div class="stats">
-            <div>انت الزائر رقم <span id="visitorCount">0</span></div>
-            <div>شيرت لـ <span id="shareCount">0</span> صحاب</div>
-        </div>
+        <div id="alarmList"></div>
     </div>
-
-    <button id="toggleCommands" onclick="toggleCommandsList()">⚙️</button>
 
     <script>
         let recognition;
         let isListening = false;
         let isAwake = false;
-        let visitorCount = localStorage.getItem('visits') || 0;
-        let shareCount = localStorage.getItem('shares') || 0;
-
-        visitorCount++;
-        localStorage.setItem('visits', visitorCount);
-        document.getElementById('visitorCount').textContent = visitorCount;
-        document.getElementById('shareCount').textContent = shareCount;
-
-        function log(msg) {
-            const logDiv = document.getElementById('log');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.textContent = new Date().toLocaleTimeString('ar-EG') + ' - ' + msg;
-            logDiv.appendChild(entry);
-            logDiv.scrollTop = logDiv.scrollHeight;
-        }
+        let alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
+        
+        updateAlarmList();
+        checkAlarms();
 
         function updateStatus(text) {
             document.getElementById('status').textContent = text;
@@ -203,22 +134,15 @@
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'ar-EG';
             u.rate = 1.1;
-            u.onstart = () => updateStatus('بيتكلم...');
+            u.onstart = () => updateStatus('بتكلم...');
             u.onend = () => {
-                updateStatus('');
-                if (isListening && recognition) {
-                    setTimeout(() => recognition.start(), 100);
-                }
+                updateStatus('سامعك...');
+                if (isListening && recognition) setTimeout(() => recognition.start(), 100);
             };
             speechSynthesis.speak(u);
-            log('قال: ' + text);
         }
 
-        function testVoice() {
-            speak('تمام يا معلم الصوت اشتغل');
-        }
-
-        function toggleMic() {
+        function toggleAI() {
             if (!isListening) {
                 startListening();
             } else {
@@ -240,21 +164,18 @@
 
             recognition.onstart = () => {
                 isListening = true;
-                updateStatus('سامعك... قول "يا صاحبي"');
+                updateStatus('قول "يا صاحبي" عشان أصحى');
                 document.getElementById('micBtn').textContent = 'وقف صاحبي';
                 document.getElementById('micBtn').className = 'btn btn-stop';
-                log('المايك اشتغل');
             };
 
             recognition.onresult = (event) => {
-                const last = event.results.length - 1;
-                const text = event.results[last][0].transcript.trim();
-                log('انت قولت: ' + text);
-
+                const text = event.results[event.results.length - 1][0].transcript.trim();
+                
                 if (!isAwake && (text.includes('يا صاحبي') || text.includes('ياصاحبي'))) {
                     isAwake = true;
-                    speak('أيوه اؤمر');
-                    setTimeout(() => { isAwake = false; }, 10000);
+                    speak('أيوه اؤمرني');
+                    setTimeout(() => { isAwake = false; }, 8000);
                 } else if (isAwake) {
                     handleCommand(text);
                     isAwake = false;
@@ -262,9 +183,8 @@
             };
 
             recognition.onerror = (e) => {
-                log('خطأ: ' + e.error);
                 if (e.error === 'not-allowed') {
-                    alert('لازم توافق على المايك من المتصفح');
+                    alert('لازم توافق على المايك');
                     stopListening();
                 }
             };
@@ -282,65 +202,96 @@
             isListening = false;
             isAwake = false;
             if (recognition) recognition.stop();
-            updateStatus('');
+            updateStatus('دوس الزرار عشان أبدأ أسمعك');
             document.getElementById('micBtn').textContent = 'شغّل صاحبي';
-            document.getElementById('micBtn').className = 'btn btn-start';
-            log('المايك وقف');
+            document.getElementById('micBtn').className = 'btn btn-ai';
         }
 
         function handleCommand(text) {
             text = text.toLowerCase();
+            
             if (text.includes('عامل ايه') || text.includes('ازيك')) {
                 speak('زي الفل يا صاحبي وانت عامل ايه');
             } else if (text.includes('نكتة')) {
-                const jokes = [
-                    'واحد راح للدكتور قاله يا دكتور انا بنسى كتير. قاله من امتى؟ قاله من امتى ايه؟',
-                    'مرة واحد غبي راح السينما لقى مكتوب ممنوع الدخول لأقل من 18 سنة راح جاب 17 صاحبه'
-                ];
-                speak(jokes[Math.floor(Math.random() * jokes.length)]);
+                speak('واحد راح للدكتور قاله بنسى كتير. قاله من امتى؟ قاله من امتى ايه؟');
             } else if (text.includes('الساعة') || text.includes('الوقت')) {
                 const time = new Date().toLocaleTimeString('ar-EG');
                 speak('الساعة دلوقتي ' + time);
-            } else if (text.includes('اغاني') || text.includes('شغل')) {
-                speak('هفتحلك يوتيوب حالا');
-                window.open('https://youtube.com', '_blank');
-            } else if (text.includes('شير') || text.includes('ابعت')) {
-                shareApp();
+            } else if (text.includes('صحيني') || text.includes('منبه')) {
+                setAlarmFromText(text);
             } else {
-                speak('مفهمتش يا صاحبي قول تاني');
+                speak('مفهمتش. قول تاني');
             }
         }
 
-        function shareApp() {
-            const url = window.location.href;
-            const text = 'تعالى جرب صاحبي AI بيرد عليك بالصوت 😂';
-            if (navigator.share) {
-                navigator.share({
-                    title: 'صاحبي AI',
-                    text: text,
-                    url: url
-                }).then(() => {
-                    shareCount++;
-                    localStorage.setItem('shares', shareCount);
-                    document.getElementById('shareCount').textContent = shareCount;
-                    log('اتشير بنجاح');
+        function setAlarmVoice() {
+            speak('قول عايز تصحى الساعة كام');
+            if (!isListening) startListening();
+            isAwake = true;
+        }
+
+        function setAlarmFromText(text) {
+            const numbers = text.match(/\d+/g);
+            if (numbers && numbers.length > 0) {
+                let hour = parseInt(numbers[0]);
+                let minute = numbers[1]? parseInt(numbers[1]) : 0;
+                
+                if (text.includes('المسا') || text.includes('بالليل')) {
+                    if (hour < 12) hour += 12;
+                }
+                
+                const now = new Date();
+                const alarmTime = new Date();
+                alarmTime.setHours(hour, minute, 0, 0);
+                
+                if (alarmTime < now) {
+                    alarmTime.setDate(alarmTime.getDate() + 1);
+                }
+                
+                alarms.push({time: alarmTime.getTime(), text: `الساعة ${hour}:${minute.toString().padStart(2,'0')}`});
+                localStorage.setItem('alarms', JSON.stringify(alarms));
+                updateAlarmList();
+                speak(`تمام ظبطتلك المنبه على الساعة ${hour} و ${minute}`);
+            } else {
+                speak('مفهمتش الساعة كام. قول تاني مثلا صحيني الساعة 7');
+            }
+        }
+
+        function updateAlarmList() {
+            const list = document.getElementById('alarmList');
+            if (alarms.length === 0) {
+                list.innerHTML = '<div style="color:#666;text-align:center">مفيش منبهات</div>';
+                return;
+            }
+            list.innerHTML = alarms.map((alarm, i) => 
+                `<div class="alarm-item">
+                    <span>${alarm.text}</span>
+                    <button class="delete-alarm" onclick="deleteAlarm(${i})">X</button>
+                </div>`
+            ).join('');
+        }
+
+        function deleteAlarm(index) {
+            alarms.splice(index, 1);
+            localStorage.setItem('alarms', JSON.stringify(alarms));
+            updateAlarmList();
+            speak('مسحت المنبه');
+        }
+
+        function checkAlarms() {
+            setInterval(() => {
+                const now = new Date().getTime();
+                alarms = alarms.filter(alarm => {
+                    if (now >= alarm.time) {
+                        speak('اصحى يا معلم. الساعة بقت ' + alarm.text);
+                        return false;
+                    }
+                    return true;
                 });
-            } else {
-                navigator.clipboard.writeText(url);
-                alert('الرابط اتنسخ! ابعته لصحابك');
-                shareCount++;
-                localStorage.setItem('shares', shareCount);
-                document.getElementById('shareCount').textContent = shareCount;
-            }
+                localStorage.setItem('alarms', JSON.stringify(alarms));
+                updateAlarmList();
+            }, 30000);
         }
-
-        function toggleCommandsList() {
-            document.getElementById('commands').classList.toggle('hidden');
-        }
-
-        window.onload = () => {
-            log('الصفحة حملت. دوس على الزرار البرتقاني الأول');
-        };
     </script>
 </body>
 </html>
