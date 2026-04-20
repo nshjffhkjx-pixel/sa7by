@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صاحبي AI - شغال بجد</title>
+    <title>صاحبي AI</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
             align-items: center;
             padding: 20px;
         }
-       .container {
+     .container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
@@ -34,7 +34,7 @@
             margin-bottom: 10px;
             font-size: 28px;
         }
-       .subtitle {
+     .subtitle {
             text-align: center;
             color: #666;
             margin-bottom: 20px;
@@ -42,27 +42,13 @@
         }
         #status {
             text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            background: #f0f0f0;
-            color: #333;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+            min-height: 20px;
         }
-        #status.listening {
-            background: #4caf50;
-            color: white;
-            animation: pulse 1.5s infinite;
-        }
-        #status.speaking {
-            background: #ff9800;
-            color: white;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-       .btn {
+     .btn {
             width: 100%;
             padding: 15px;
             border: none;
@@ -73,22 +59,22 @@
             margin-bottom: 10px;
             transition: all 0.3s;
         }
-       .btn:active {
+     .btn:active {
             transform: scale(0.98);
         }
-       .btn-start {
+     .btn-start {
             background: #4caf50;
             color: white;
         }
-       .btn-stop {
+     .btn-stop {
             background: #f44336;
             color: white;
         }
-       .btn-share {
+     .btn-share {
             background: #2196F3;
             color: white;
         }
-       .btn-test {
+     .btn-test {
             background: #ff9800;
             color: white;
         }
@@ -101,13 +87,13 @@
             margin-bottom: 15px;
             font-size: 14px;
         }
-       .log-entry {
+     .log-entry {
             margin-bottom: 8px;
             padding: 8px;
             border-radius: 5px;
             background: white;
         }
-       .stats {
+     .stats {
             display: flex;
             justify-content: space-around;
             margin-top: 15px;
@@ -136,7 +122,7 @@
         }
         #toggleCommands {
             position: fixed;
-            bottom: 80px;
+            bottom: 90px;
             right: 20px;
             width: 50px;
             height: 50px;
@@ -149,7 +135,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             z-index: 1000;
         }
-       .hidden {
+     .hidden {
             display: none;
         }
     </style>
@@ -159,7 +145,7 @@
         <h1>🎤 صاحبي AI</h1>
         <div class="subtitle">الإصدار اللي مبيخرسش</div>
 
-        <div id="status">جاهز للتشغيل</div>
+        <div id="status"></div>
 
         <div id="commands" class="hidden">
             <h3>الأوامر المتاحة:</h3>
@@ -208,10 +194,8 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        function updateStatus(text, cls) {
-            const status = document.getElementById('status');
-            status.textContent = text;
-            status.className = cls || '';
+        function updateStatus(text) {
+            document.getElementById('status').textContent = text;
         }
 
         function speak(text) {
@@ -219,17 +203,19 @@
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'ar-EG';
             u.rate = 1.1;
-            u.onstart = () => updateStatus('بيتكلم...', 'speaking');
+            u.onstart = () => updateStatus('بيتكلم...');
             u.onend = () => {
-                updateStatus('سامعك...', 'listening');
-                if (isListening && recognition) recognition.start();
+                updateStatus('');
+                if (isListening && recognition) {
+                    setTimeout(() => recognition.start(), 100);
+                }
             };
             speechSynthesis.speak(u);
             log('قال: ' + text);
         }
 
         function testVoice() {
-            speak('تمام يا معلم الصوت اشتغل. دلوقتي تقدر تشغلني');
+            speak('تمام يا معلم الصوت اشتغل');
         }
 
         function toggleMic() {
@@ -242,7 +228,7 @@
 
         function startListening() {
             if (!('webkitSpeechRecognition' in window) &&!('SpeechRecognition' in window)) {
-                alert('المتصفح ده مش بيدعم المايك. جرب كروم على موبايل');
+                alert('المتصفح ده مش بيدعم المايك. جرب كروم');
                 return;
             }
 
@@ -254,7 +240,7 @@
 
             recognition.onstart = () => {
                 isListening = true;
-                updateStatus('سامعك... قول "يا صاحبي"', 'listening');
+                updateStatus('سامعك... قول "يا صاحبي"');
                 document.getElementById('micBtn').textContent = 'وقف صاحبي';
                 document.getElementById('micBtn').className = 'btn btn-stop';
                 log('المايك اشتغل');
@@ -284,8 +270,8 @@
             };
 
             recognition.onend = () => {
-                if (isListening) {
-                    recognition.start();
+                if (isListening &&!speechSynthesis.speaking) {
+                    setTimeout(() => recognition.start(), 100);
                 }
             };
 
@@ -296,7 +282,7 @@
             isListening = false;
             isAwake = false;
             if (recognition) recognition.stop();
-            updateStatus('واقف', '');
+            updateStatus('');
             document.getElementById('micBtn').textContent = 'شغّل صاحبي';
             document.getElementById('micBtn').className = 'btn btn-start';
             log('المايك وقف');
@@ -304,14 +290,12 @@
 
         function handleCommand(text) {
             text = text.toLowerCase();
-
             if (text.includes('عامل ايه') || text.includes('ازيك')) {
                 speak('زي الفل يا صاحبي وانت عامل ايه');
             } else if (text.includes('نكتة')) {
                 const jokes = [
                     'واحد راح للدكتور قاله يا دكتور انا بنسى كتير. قاله من امتى؟ قاله من امتى ايه؟',
-                    'مرة واحد غبي راح السينما لقى مكتوب ممنوع الدخول لأقل من 18 سنة راح جاب 17 صاحبه',
-                    'واحد بخيل مات ابوه راح يدفنه لقى التربي عايز 50 جنيه قال لا ده غالي هديله جثه تانيه'
+                    'مرة واحد غبي راح السينما لقى مكتوب ممنوع الدخول لأقل من 18 سنة راح جاب 17 صاحبه'
                 ];
                 speak(jokes[Math.floor(Math.random() * jokes.length)]);
             } else if (text.includes('الساعة') || text.includes('الوقت')) {
@@ -330,7 +314,6 @@
         function shareApp() {
             const url = window.location.href;
             const text = 'تعالى جرب صاحبي AI بيرد عليك بالصوت 😂';
-
             if (navigator.share) {
                 navigator.share({
                     title: 'صاحبي AI',
