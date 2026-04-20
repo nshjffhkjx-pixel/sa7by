@@ -3,15 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صاحبي</title>
+    <title>صاحبي - مساعدك الشخصي</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #111; color: white; }
-        h1 { font-size: 48px; color: #a855f7; }
-        p { font-size: 20px; }
+        body { font-family: Tahoma; text-align: center; background: #1a1a1a; color: white; padding-top: 50px; }
+        button { font-size: 20px; padding: 15px 30px; margin: 10px; border-radius: 12px; border: none; cursor: pointer; }
+        #startBtn { background: #00ff88; color: black; }
+        #status { margin-top: 30px; font-size: 24px; color: #00ff88; }
+        input { font-size: 18px; padding: 10px; border-radius: 8px; width: 200px; text-align: center; }
     </style>
 </head>
 <body>
-    <h1>أهلاً بيك في صاحبي</h1>
-    <p>موقعك شغال تمام</p>
+    <h1>صاحبي 👂</h1>
+    <p>اختار كلمة التنشيط بتاعتك:</p>
+    <input id="wakeWord" placeholder="مثال: يا صاحبي" value="يا صاحبي">
+    <br><br>
+    <button id="startBtn">شغّل صاحبي</button>
+    <div id="status">دوس الزرار عشان أبدأ أسمعك</div>
+
+    <script>
+        let wakeWord = "يا صاحبي";
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const wakeInput = document.getElementById('wakeWord');
+
+        startBtn.onclick = () => {
+            wakeWord = wakeInput.value.trim();
+            startListening();
+        };
+
+        function speak(text) {
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'ar-SA';
+            window.speechSynthesis.speak(msg);
+        }
+
+        function startListening() {
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'ar-EG';
+            recognition.continuous = true;
+            status.innerText = `بستناك تقول: "${wakeWord}"`;
+            speak("أنا جاهز يا معلم");
+
+            recognition.onresult = (event) => {
+                const text = event.results[event.results.length-1][0].transcript.trim();
+                console.log(text);
+                if (text.includes(wakeWord)) {
+                    speak("أنا موجود يا صاحبي اؤمر");
+                    status.innerText = "سامعك.. قول الأمر";
+                }
+            };
+
+            recognition.start();
+        }
+    </script>
 </body>
 </html>
