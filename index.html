@@ -3,293 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صاحبي AI</title>
+    <title>صاحبي</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: Tahoma;
             background: #121212;
-            min-height: 100vh;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            color: white;
+            min-height: 100vh;
+            margin: 0;
         }
-    .container {
+  .box {
             background: #1e1e1e;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 100%;
             padding: 30px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        }
-        h1 {
+            border-radius: 20px;
+            width: 90%;
+            max-width: 350px;
             text-align: center;
-            color: white;
-            margin-bottom: 10px;
-            font-size: 28px;
         }
-    .subtitle {
-            text-align: center;
-            color: #00ff88;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
+        h1 { color: white; margin-bottom: 5px; }
+  .green { color: #00ff88; margin-bottom: 25px; font-size: 14px; }
         #status {
-            text-align: center;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 16px;
-            color: #aaa;
             background: #2a2a2a;
+            padding: 15px;
             border-radius: 10px;
-            min-height: 50px;
+            margin-bottom: 20px;
+            min-height: 20px;
         }
-    .btn {
+  .btn {
             width: 100%;
             padding: 18px;
             border: none;
             border-radius: 12px;
             font-size: 18px;
             font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-    .btn:active {
-            transform: scale(0.97);
-        }
-    .btn-ai {
-            background: #00d66f;
-            color: #121212;
-        }
-    .btn-stop {
-            background: #ff3b30;
-            color: white;
-        }
-    .btn-alarm {
-            background: #007aff;
-            color: white;
-        }
-        #alarmList {
-            background: #2a2a2a;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 14px;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-       .alarm-item {
-            padding: 8px;
-            margin-bottom: 5px;
-            background: #333;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-        }
-       .delete-alarm {
-            background: #ff3b30;
-            border: none;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 5px;
+            margin-bottom: 12px;
             cursor: pointer;
         }
+  .btn1 { background: #00d66f; color: #121212; }
+  .btn2 { background: #007aff; color: white; }
+  .btn3 { background: #ff3b30; color: white; }
+        #alarms { margin-top: 15px; font-size: 14px; color: #aaa; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧠 👂 AI صاحبي</h1>
-        <div class="subtitle">احنا صممناه سوا - حققت حلمي</div>
-
-        <div id="status">دوس الزرار عشان أبدأ أسمعك</div>
-
-        <button class="btn btn-ai" id="micBtn" onclick="toggleAI()">شغّل صاحبي</button>
-        <button class="btn btn-alarm" onclick="setAlarmVoice()">اظبط منبه بالصوت</button>
-
-        <div id="alarmList"></div>
+    <div class="box">
+        <h1>🧠 👂 صاحبي</h1>
+        <div class="green">احنا صممناه سوا</div>
+        
+        <div id="status">دوس شغل صاحبي</div>
+        
+        <button class="btn btn1" id="startBtn" onclick="start()">شغّل صاحبي</button>
+        <button class="btn btn2" onclick="setAlarm()">اظبط منبه</button>
+        
+        <div id="alarms"></div>
     </div>
 
     <script>
-        let recognition;
-        let isListening = false;
-        let isAwake = false;
-        let alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
+        let rec, on = false, awake = false;
+        let alarms = JSON.parse(localStorage.getItem('a') || '[]');
         
-        updateAlarmList();
+        showAlarms();
         checkAlarms();
 
-        function updateStatus(text) {
-            document.getElementById('status').textContent = text;
-        }
-
-        function speak(text) {
-            if (recognition) recognition.stop();
-            const u = new SpeechSynthesisUtterance(text);
+        function status(t) { document.getElementById('status').textContent = t; }
+        
+        function talk(t) {
+            if (rec) rec.stop();
+            let u = new SpeechSynthesisUtterance(t);
             u.lang = 'ar-EG';
-            u.rate = 1.1;
-            u.onstart = () => updateStatus('بتكلم...');
-            u.onend = () => {
-                updateStatus('سامعك...');
-                if (isListening && recognition) setTimeout(() => recognition.start(), 100);
-            };
+            u.onend = () => { if(on && rec) setTimeout(() => rec.start(), 100); };
             speechSynthesis.speak(u);
+            status('بتكلم...');
         }
 
-        function toggleAI() {
-            if (!isListening) {
-                startListening();
-            } else {
-                stopListening();
-            }
-        }
-
-        function startListening() {
-            if (!('webkitSpeechRecognition' in window) &&!('SpeechRecognition' in window)) {
-                alert('المتصفح ده مش بيدعم المايك. جرب كروم');
+        function start() {
+            if (on) {
+                on = false;
+                if (rec) rec.stop();
+                document.getElementById('startBtn').textContent = 'شغّل صاحبي';
+                document.getElementById('startBtn').className = 'btn btn1';
+                status('وقفت');
                 return;
             }
-
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.lang = 'ar-EG';
-            recognition.continuous = true;
-            recognition.interimResults = false;
-
-            recognition.onstart = () => {
-                isListening = true;
-                updateStatus('قول "يا صاحبي" عشان أصحى');
-                document.getElementById('micBtn').textContent = 'وقف صاحبي';
-                document.getElementById('micBtn').className = 'btn btn-stop';
-            };
-
-            recognition.onresult = (event) => {
-                const text = event.results[event.results.length - 1][0].transcript.trim();
-                
-                if (!isAwake && (text.includes('يا صاحبي') || text.includes('ياصاحبي'))) {
-                    isAwake = true;
-                    speak('أيوه اؤمرني');
-                    setTimeout(() => { isAwake = false; }, 8000);
-                } else if (isAwake) {
-                    handleCommand(text);
-                    isAwake = false;
-                }
-            };
-
-            recognition.onerror = (e) => {
-                if (e.error === 'not-allowed') {
-                    alert('لازم توافق على المايك');
-                    stopListening();
-                }
-            };
-
-            recognition.onend = () => {
-                if (isListening &&!speechSynthesis.speaking) {
-                    setTimeout(() => recognition.start(), 100);
-                }
-            };
-
-            recognition.start();
-        }
-
-        function stopListening() {
-            isListening = false;
-            isAwake = false;
-            if (recognition) recognition.stop();
-            updateStatus('دوس الزرار عشان أبدأ أسمعك');
-            document.getElementById('micBtn').textContent = 'شغّل صاحبي';
-            document.getElementById('micBtn').className = 'btn btn-ai';
-        }
-
-        function handleCommand(text) {
-            text = text.toLowerCase();
             
-            if (text.includes('عامل ايه') || text.includes('ازيك')) {
-                speak('زي الفل يا صاحبي وانت عامل ايه');
-            } else if (text.includes('نكتة')) {
-                speak('واحد راح للدكتور قاله بنسى كتير. قاله من امتى؟ قاله من امتى ايه؟');
-            } else if (text.includes('الساعة') || text.includes('الوقت')) {
-                const time = new Date().toLocaleTimeString('ar-EG');
-                speak('الساعة دلوقتي ' + time);
-            } else if (text.includes('صحيني') || text.includes('منبه')) {
-                setAlarmFromText(text);
-            } else {
-                speak('مفهمتش. قول تاني');
-            }
-        }
-
-        function setAlarmVoice() {
-            speak('قول عايز تصحى الساعة كام');
-            if (!isListening) startListening();
-            isAwake = true;
-        }
-
-        function setAlarmFromText(text) {
-            const numbers = text.match(/\d+/g);
-            if (numbers && numbers.length > 0) {
-                let hour = parseInt(numbers[0]);
-                let minute = numbers[1]? parseInt(numbers[1]) : 0;
-                
-                if (text.includes('المسا') || text.includes('بالليل')) {
-                    if (hour < 12) hour += 12;
+            let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return alert('جرب كروم');
+            
+            rec = new SR();
+            rec.lang = 'ar-EG';
+            rec.continuous = true;
+            
+            rec.onstart = () => {
+                on = true;
+                status('قول يا صاحبي');
+                document.getElementById('startBtn').textContent = 'وقف صاحبي';
+                document.getElementById('startBtn').className = 'btn btn3';
+            };
+            
+            rec.onresult = e => {
+                let t = e.results[e.results.length - 1][0].transcript;
+                if (!awake && t.includes('يا صاحبي')) {
+                    awake = true;
+                    talk('أيوه اؤمر');
+                    setTimeout(() => awake = false, 8000);
+                } else if (awake) {
+                    awake = false;
+                    if (t.includes('صحيني') || t.includes('منبه')) {
+                        let n = t.match(/\d+/);
+                        if (n) {
+                            let h = parseInt(n[0]);
+                            let d = new Date();
+                            d.setHours(h, 0, 0, 0);
+                            if (d < new Date()) d.setDate(d.getDate() + 1);
+                            alarms.push({t: d.getTime(), h: h});
+                            localStorage.setItem('a', JSON.stringify(alarms));
+                            showAlarms();
+                            talk('تمام ظبطت المنبه الساعة ' + h);
+                        } else {
+                            talk('الساعة كام؟');
+                        }
+                    } else if (t.includes('الساعة')) {
+                        talk('الساعة ' + new Date().toLocaleTimeString('ar-EG'));
+                    } else if (t.includes('عامل ايه')) {
+                        talk('زي الفل وانت');
+                    } else {
+                        talk('مفهمتش');
+                    }
                 }
-                
-                const now = new Date();
-                const alarmTime = new Date();
-                alarmTime.setHours(hour, minute, 0, 0);
-                
-                if (alarmTime < now) {
-                    alarmTime.setDate(alarmTime.getDate() + 1);
-                }
-                
-                alarms.push({time: alarmTime.getTime(), text: `الساعة ${hour}:${minute.toString().padStart(2,'0')}`});
-                localStorage.setItem('alarms', JSON.stringify(alarms));
-                updateAlarmList();
-                speak(`تمام ظبطتلك المنبه على الساعة ${hour} و ${minute}`);
-            } else {
-                speak('مفهمتش الساعة كام. قول تاني مثلا صحيني الساعة 7');
-            }
+            };
+            
+            rec.onerror = e => { if (e.error === 'not-allowed') alert('وافق على المايك'); };
+            rec.onend = () => { if (on &&!speechSynthesis.speaking) setTimeout(() => rec.start(), 100); };
+            rec.start();
         }
 
-        function updateAlarmList() {
-            const list = document.getElementById('alarmList');
-            if (alarms.length === 0) {
-                list.innerHTML = '<div style="color:#666;text-align:center">مفيش منبهات</div>';
-                return;
-            }
-            list.innerHTML = alarms.map((alarm, i) => 
-                `<div class="alarm-item">
-                    <span>${alarm.text}</span>
-                    <button class="delete-alarm" onclick="deleteAlarm(${i})">X</button>
-                </div>`
-            ).join('');
+        function setAlarm() {
+            talk('قول عايز تصحى الساعة كام');
+            if (!on) start();
+            awake = true;
         }
 
-        function deleteAlarm(index) {
-            alarms.splice(index, 1);
-            localStorage.setItem('alarms', JSON.stringify(alarms));
-            updateAlarmList();
-            speak('مسحت المنبه');
+        function showAlarms() {
+            document.getElementById('alarms').innerHTML = alarms.length? 
+                'المنبهات: ' + alarms.map(a => a.h).join(', ') : 
+                'مفيش منبهات';
         }
 
         function checkAlarms() {
             setInterval(() => {
-                const now = new Date().getTime();
-                alarms = alarms.filter(alarm => {
-                    if (now >= alarm.time) {
-                        speak('اصحى يا معلم. الساعة بقت ' + alarm.text);
+                let now = new Date().getTime();
+                alarms = alarms.filter(a => {
+                    if (now >= a.t) {
+                        talk('اصحى الساعة بقت ' + a.h);
                         return false;
                     }
                     return true;
                 });
-                localStorage.setItem('alarms', JSON.stringify(alarms));
-                updateAlarmList();
+                localStorage.setItem('a', JSON.stringify(alarms));
+                showAlarms();
             }, 30000);
         }
     </script>
