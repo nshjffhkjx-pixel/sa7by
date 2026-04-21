@@ -5,167 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>صاحبي</title>
     <style>
-        body {
-            font-family: Tahoma;
-            background: #121212;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-  .box {
-            background: #1e1e1e;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 350px;
-            text-align: center;
-        }
-        h1 { color: white; margin-bottom: 5px; }
-  .green { color: #00ff88; margin-bottom: 25px; font-size: 14px; }
-        #status {
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            min-height: 20px;
-        }
-  .btn {
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            cursor: pointer;
-        }
-  .btn1 { background: #00d66f; color: #121212; }
-  .btn2 { background: #007aff; color: white; }
-  .btn3 { background: #ff3b30; color: white; }
-        #alarms { margin-top: 15px; font-size: 14px; color: #aaa; }
+        body{background:#121212;color:#fff;font-family:Tahoma;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+      .box{background:#1e1e1e;padding:25px;border-radius:20px;width:90%;max-width:350px;text-align:center}
+        h1{margin:0 0 5px 0}
+      .sub{color:#00ff88;margin-bottom:20px;font-size:14px}
+        #st{background:#2a2a2a;padding:15px;border-radius:10px;margin-bottom:15px;min-height:20px}
+      .b{width:100%;padding:18px;border:0;border-radius:12px;font-size:18px;font-weight:bold;margin-bottom:10px;cursor:pointer}
+      .b1{background:#00d66f;color:#121212}
+      .b2{background:#007aff;color:#fff}
+      .b3{background:#ff3b30;color:#fff}
+        #al{margin-top:10px;font-size:13px;color:#999}
     </style>
 </head>
 <body>
     <div class="box">
         <h1>🧠 👂 صاحبي</h1>
-        <div class="green">احنا صممناه سوا</div>
-        
-        <div id="status">دوس شغل صاحبي</div>
-        
-        <button class="btn btn1" id="startBtn" onclick="start()">شغّل صاحبي</button>
-        <button class="btn btn2" onclick="setAlarm()">اظبط منبه</button>
-        
-        <div id="alarms"></div>
+        <div class="sub">احنا صممناه سوا</div>
+        <div id="st">دوس شغّل صاحبي</div>
+        <button class="b b1" id="btn" onclick="go()">شغّل صاحبي</button>
+        <button class="b b2" onclick="alarm()">اظبط منبه</button>
+        <div id="al"></div>
     </div>
+<script>
+let r,on=0,awake=0,als=JSON.parse(localStorage.getItem('a')||'[]');
+upd();chk();
 
-    <script>
-        let rec, on = false, awake = false;
-        let alarms = JSON.parse(localStorage.getItem('a') || '[]');
-        
-        showAlarms();
-        checkAlarms();
+function st(t){document.getElementById('st').textContent=t}
+function spk(t){if(r)r.stop();let u=new SpeechSynthesisUtterance(t);u.lang='ar-EG';u.onend=()=>{if(on&&r)setTimeout(()=>r.start(),200)};speechSynthesis.speak(u);st('بتكلم...')}
 
-        function status(t) { document.getElementById('status').textContent = t; }
-        
-        function talk(t) {
-            if (rec) rec.stop();
-            let u = new SpeechSynthesisUtterance(t);
-            u.lang = 'ar-EG';
-            u.onend = () => { if(on && rec) setTimeout(() => rec.start(), 100); };
-            speechSynthesis.speak(u);
-            status('بتكلم...');
-        }
+function go(){
+if(on){on=0;if(r)r.stop();document.getElementById('btn').textContent='شغّل صاحبي';document.getElementById('btn').className='b b1';st('وقفت');return}
+let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){alert('افتح من جوجل كروم');return}
+r=new SR();r.lang='ar-EG';r.continuous=!0;
+r.onstart=()=>{on=1;st('قول يا صاحبي');document.getElementById('btn').textContent='وقف صاحبي';document.getElementById('btn').className='b b3'}
+r.onresult=e=>{let t=e.results[e.results.length-1][0].transcript;if(!awake&&t.includes('يا صاحبي')){awake=1;spk('ايوه اؤمر');setTimeout(()=>awake=0,8000)}else if(awake){awake=0;cmd(t)}}
+r.onerror=e=>{if(e.error=='not-allowed')alert('لازم توافق على المايك')}
+r.onend=()=>{if(on&&!speechSynthesis.speaking)setTimeout(()=>r.start(),200)}
+r.start()
+}
 
-        function start() {
-            if (on) {
-                on = false;
-                if (rec) rec.stop();
-                document.getElementById('startBtn').textContent = 'شغّل صاحبي';
-                document.getElementById('startBtn').className = 'btn btn1';
-                status('وقفت');
-                return;
-            }
-            
-            let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return alert('جرب كروم');
-            
-            rec = new SR();
-            rec.lang = 'ar-EG';
-            rec.continuous = true;
-            
-            rec.onstart = () => {
-                on = true;
-                status('قول يا صاحبي');
-                document.getElementById('startBtn').textContent = 'وقف صاحبي';
-                document.getElementById('startBtn').className = 'btn btn3';
-            };
-            
-            rec.onresult = e => {
-                let t = e.results[e.results.length - 1][0].transcript;
-                if (!awake && t.includes('يا صاحبي')) {
-                    awake = true;
-                    talk('أيوه اؤمر');
-                    setTimeout(() => awake = false, 8000);
-                } else if (awake) {
-                    awake = false;
-                    if (t.includes('صحيني') || t.includes('منبه')) {
-                        let n = t.match(/\d+/);
-                        if (n) {
-                            let h = parseInt(n[0]);
-                            let d = new Date();
-                            d.setHours(h, 0, 0, 0);
-                            if (d < new Date()) d.setDate(d.getDate() + 1);
-                            alarms.push({t: d.getTime(), h: h});
-                            localStorage.setItem('a', JSON.stringify(alarms));
-                            showAlarms();
-                            talk('تمام ظبطت المنبه الساعة ' + h);
-                        } else {
-                            talk('الساعة كام؟');
-                        }
-                    } else if (t.includes('الساعة')) {
-                        talk('الساعة ' + new Date().toLocaleTimeString('ar-EG'));
-                    } else if (t.includes('عامل ايه')) {
-                        talk('زي الفل وانت');
-                    } else {
-                        talk('مفهمتش');
-                    }
-                }
-            };
-            
-            rec.onerror = e => { if (e.error === 'not-allowed') alert('وافق على المايك'); };
-            rec.onend = () => { if (on &&!speechSynthesis.speaking) setTimeout(() => rec.start(), 100); };
-            rec.start();
-        }
+function cmd(t){
+t=t.toLowerCase();
+if(t.includes('صحيني')||t.includes('منبه')){let n=t.match(/\d+/);if(n){let h=parseInt(n[0]);let d=new Date();d.setHours(h,0,0,0);if(d<new Date())d.setDate(d.getDate()+1);als.push({t:d.getTime(),h:h});localStorage.setItem('a',JSON.stringify(als));upd();spk('تمام ظبطت المنبه الساعة '+h)}else spk('الساعة كام')}
+else if(t.includes('الساعة')){spk('الساعة '+new Date().toLocaleTimeString('ar-EG'))}
+else if(t.includes('عامل ايه')){spk('زي الفل وانت')}
+else{spk('مفهمتش')}
+}
 
-        function setAlarm() {
-            talk('قول عايز تصحى الساعة كام');
-            if (!on) start();
-            awake = true;
-        }
+function alarm(){spk('قول عايز تصحى الساعة كام');if(!on)go();awake=1}
 
-        function showAlarms() {
-            document.getElementById('alarms').innerHTML = alarms.length? 
-                'المنبهات: ' + alarms.map(a => a.h).join(', ') : 
-                'مفيش منبهات';
-        }
+function upd(){document.getElementById('al').innerHTML=als.length?'المنبهات: '+als.map(a=>a.h).join(', '):'مفيش منبهات'}
 
-        function checkAlarms() {
-            setInterval(() => {
-                let now = new Date().getTime();
-                alarms = alarms.filter(a => {
-                    if (now >= a.t) {
-                        talk('اصحى الساعة بقت ' + a.h);
-                        return false;
-                    }
-                    return true;
-                });
-                localStorage.setItem('a', JSON.stringify(alarms));
-                showAlarms();
-            }, 30000);
-        }
-    </script>
+function chk(){setInterval(()=>{let n=new Date().getTime();als=als.filter(a=>{if(n>=a.t){spk('اصحى الساعة بقت '+a.h);return!1}return!0});localStorage.setItem('a',JSON.stringify(als));upd()},30000)}
+</script>
 </body>
 </html>
